@@ -9,7 +9,7 @@ namespace Scheduler
     class IClock
     {
     public:
-        using Time_t = uint16_t;
+        using Time_t = uint32_t;
         virtual Time_t currentTime() = 0;
     };
 

@@ -122,3 +122,59 @@ TEST(SchedulerTests, TaskRunningWorksOnOverflow)
     scheduler.run();
     EXPECT_TRUE(ran);
 }
+
+TEST(SchedulerTests, LateCallWillHonorOriginalFrequency)
+{
+    MockClock clock;
+    MonotonicScheduler scheduler(clock);
+
+    bool ran = false;
+    scheduler.schedule([&ran]()
+                       { ran = true; },
+                       100);
+
+    EXPECT_FALSE(ran);
+    scheduler.run();
+    EXPECT_TRUE(ran);
+
+    // 10 units past the scheduled time
+    clock.value += 110;
+    scheduler.run();
+    EXPECT_TRUE(ran);
+    
+    // Now move the clock to just before the next scheduled time
+    clock.value += 100 - 10 - 1;
+    ran = false;
+    scheduler.run();
+    EXPECT_FALSE(ran);
+
+    // One more
+    clock.value += 1;
+    scheduler.run();
+    EXPECT_TRUE(ran);
+}
+
+TEST(SchedulerTests, OverframeWillNotRunTaskTwice)
+{
+    MockClock clock;
+    MonotonicScheduler scheduler(clock);
+
+    bool ran = false;
+    scheduler.schedule([&ran]()
+                       { ran = true; },
+                       100);
+
+    EXPECT_FALSE(ran);
+    scheduler.run();
+    EXPECT_TRUE(ran);
+
+    clock.value += 200;
+    ran = false;
+    scheduler.run();
+    EXPECT_TRUE(ran);
+
+    // Try running again
+    ran = false;
+    scheduler.run();
+    EXPECT_FALSE(ran);
+}
