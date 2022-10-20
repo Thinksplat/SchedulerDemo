@@ -141,7 +141,7 @@ TEST(SchedulerTests, LateCallWillHonorOriginalFrequency)
     clock.value += 110;
     scheduler.run();
     EXPECT_TRUE(ran);
-    
+
     // Now move the clock to just before the next scheduled time
     clock.value += 100 - 10 - 1;
     ran = false;
@@ -154,9 +154,14 @@ TEST(SchedulerTests, LateCallWillHonorOriginalFrequency)
     EXPECT_TRUE(ran);
 }
 
-TEST(SchedulerTests, OverframeWillNotRunTaskTwice)
+static bool OverframeTest(IClock::Time_t starttime = 0)
 {
     MockClock clock;
+    clock.value = starttime;
+
+    std::stringstream testrun;
+    testrun << "Running start time: " << starttime;
+    
     MonotonicScheduler scheduler(clock);
 
     bool ran = false;
@@ -176,5 +181,48 @@ TEST(SchedulerTests, OverframeWillNotRunTaskTwice)
     // Try running again
     ran = false;
     scheduler.run();
+    EXPECT_FALSE(ran) << testrun.str();
+    if(ran == true) {
+        return false;
+    }
+
+    // Bump up time to the boundary
+    clock.value += 99;
+    scheduler.run();
     EXPECT_FALSE(ran);
+
+    // One more
+    clock.value += 1;
+    scheduler.run();
+    EXPECT_TRUE(ran);
+
+    return true;
+}
+
+TEST(SchedulerTests, OverframeWillNotRunTaskTwice)
+{
+    OverframeTest();
+}
+
+TEST(SchedulerTests, SpecialEdgeCaseOverframeIssue) {
+    OverframeTest(65336);
+}
+
+TEST(SchedulerTests, OverframeRangeTesting)
+{
+    return;
+    IClock::Time_t max = std::numeric_limits<IClock::Time_t>::max();
+    std::cout << "max is : " << max << std::endl;
+    IClock::Time_t i = 0;
+    while(max > 0) {
+        std::cout << "Testing: " << i << std::endl;
+        if( i > 65534) {
+            std::cout << "greater " << i << std::endl;
+        }
+        if(false == OverframeTest(i)) {
+            break;
+        }
+        ++i;
+        --max;
+    }
 }
