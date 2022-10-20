@@ -96,14 +96,12 @@ The implementation of a scheduler will have the following behavior
 
 ### Overframe behavior
 
-```
 | 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
 ----------------------------------------------
 | X |   |   |   | X |   |   |   | X |   |    |
 ----------------------------------------------
 |   |run()|   |   | X |   |   |   | X |   |    |
 
-```
 
 An overframe condition is defined as a situation where the last time the task ran is greater or equal to the twice the scheduled run time.  Or in other words, the task should have run at least twice since the last time it ran.
 
