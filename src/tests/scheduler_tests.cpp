@@ -6,7 +6,7 @@ using namespace Scheduler;
 class MockScheduler : public IScheduler
 {
 public:
-    void schedule(const Task &task, IClock::Time_t delta_time, IClock::Time_t phase = 0) override
+    void schedule(const Task &task, IClock::time_t delta_time, IClock::time_t phase = 0) override
     {
     }
 };
@@ -14,20 +14,16 @@ public:
 class MockRunner : public IRunnableSchedule
 {
 public:
-    void run(IClock::Time_t current_time) override
+    void run(IClock::time_t current_time) override
     {
-    }
-    virtual IClock::Time_t next_run_time(IClock::Time_t current_time) override
-    {
-        return 0;
     }
 };
 
 class MockClock : public IClock
 {
 public:
-    Time_t value = 0;
-    Time_t currentTime() override
+    time_t value = 0;
+    time_t currentTime() override
     {
         return value;
     }
@@ -55,7 +51,7 @@ static bool SynchronizeClockWithTask(IRunnableSchedule &scheduler, MockClock &cl
 {
     // Loop run the scheduler incrementing the clock by 1 each time.
     // We expect the task to run within delta_time ticks.
-    for (IClock::Time_t i = 0; i < delta_time + 10; i++)
+    for (IClock::time_t i = 0; i < delta_time + 10; i++)
     {
         if (i > delta_time)
         {
@@ -91,7 +87,7 @@ static bool SynchronizeClockWithTask(IRunnableSchedule &scheduler, MockClock &cl
     // time and make sure the task runs again.
     ran = false;
     bool ranagain = false;
-    for (IClock::Time_t i = 0; i < delta_time; i++)
+    for (IClock::time_t i = 0; i < delta_time; i++)
     {
         clock.value++;
         EXPECT_FALSE(ran);
@@ -133,7 +129,7 @@ TEST(SchedulerTests, TaskShouldNotRunAgainUntilTheNextTime)
     EXPECT_TRUE(ran);
 }
 
-bool TestExpectations(IClock::Time_t delta_time, IClock::Time_t phase, IClock::Time_t starttime)
+bool TestExpectations(IClock::time_t delta_time, IClock::time_t phase, IClock::time_t starttime)
 {
     MockClock clock;
     // Set the clock to our start time
@@ -165,7 +161,7 @@ bool TestExpectations(IClock::Time_t delta_time, IClock::Time_t phase, IClock::T
 
         // We can increment the clock delta_time-1 ticks and the task should
         // NOT run
-        for (IClock::Time_t i = 0; i < delta_time - 1; i++)
+        for (IClock::time_t i = 0; i < delta_time - 1; i++)
         {
             clock.value++;
             scheduler.run(clock.currentTime());
@@ -266,9 +262,9 @@ TEST(SchedulerTests, OverframeWillNotRunTaskTwice)
 TEST(SchedulerTests, OverframeRangeTesting)
 {
     return;
-    IClock::Time_t max = std::numeric_limits<IClock::Time_t>::max();
+    IClock::time_t max = std::numeric_limits<IClock::time_t>::max();
     std::cout << "max is : " << max << std::endl;
-    IClock::Time_t i = 0;
+    IClock::time_t i = 0;
     while (max > 0)
     {
 
@@ -296,18 +292,18 @@ TEST(SchedulerTests, TestExpectations)
     ASSERT_TRUE(TestExpectations(100, 0, 100));
     ASSERT_TRUE(TestExpectations(100, 0, 101));
 
-    for (IClock::Time_t delta_time = 2; delta_time < 100; delta_time++)
+    for (IClock::time_t delta_time = 2; delta_time < 30; delta_time++)
     {
-        for (int p = -200; p < 200; p++)
+        for (int p = -30; p < 30; p++)
         {
-            IClock::Time_t phase = 0;
+            IClock::time_t phase = 0;
             phase += p;
             ASSERT_TRUE(TestExpectations(delta_time, phase, 0)) << "delta_time: " << delta_time << " phase: " << phase;
             ASSERT_TRUE(TestExpectations(delta_time, phase, delta_time / 2)) << "delta_time: " << delta_time << " phase: " << phase;
             ASSERT_TRUE(TestExpectations(delta_time, phase, delta_time)) << "delta_time: " << delta_time << " phase: " << phase;
             ASSERT_TRUE(TestExpectations(delta_time, phase, delta_time * 2)) << "delta_time: " << delta_time << " phase: " << phase;
 
-            auto max_clock = std::numeric_limits<IClock::Time_t>::max();
+            auto max_clock = std::numeric_limits<IClock::time_t>::max();
             ASSERT_TRUE(TestExpectations(delta_time, phase,  max_clock-2)) << "delta_time: " << delta_time << " phase: " << phase;
             ASSERT_TRUE(TestExpectations(delta_time, phase,  max_clock-1)) << "delta_time: " << delta_time << " phase: " << phase;
             ASSERT_TRUE(TestExpectations(delta_time, phase,  max_clock-0)) << "delta_time: " << delta_time << " phase: " << phase;

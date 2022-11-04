@@ -72,14 +72,11 @@ The executive view looks like:
     {
     public:
         virtual void run(IClock::Time_t current_time) = 0;
-        virtual IClock::Time_t next_run_time(IClock::Time_t current_time) const = 0;
     };
 ```
 
 - Precision of the scheduler is dependent on how often the executive calls run()
 - The executive is responsible for calling the run() method of the schedule at a periodic rate
-- The executive can use the next_run_time() method to determine when the next run should occur.
-  - This could be used to relinquish the processor for a period of time until the next run time.
 
 ## Implementation Details
 
