@@ -55,7 +55,7 @@ The interface is defined as:
 - Tasks are expected to execute at a certain rate defined in the unit of time of system. 
     - For example, if the unit of time is milliseconds, then the task will be scheduled to 
   run every delta_time milliseconds.
-- Tasks will be initially scheduled to run at time 0.
+- Tasks will be initialized in the schedule to run at time 0.
 - Tasks can be scheduled with a phase offset.
     - For example, two tasks run at a 1000ms interval with a phase offset of 0 and 500ms
     will run task0 at time 0, task1 at time 500, task0 at time 1000, task1 at time 1500, etc.
@@ -96,25 +96,22 @@ The implementation of a scheduler will have the following behavior
 
 ### Overframe behavior
 
-| title | another |
-|-----------------|
-|  foo  |  bar    |
-
-
-| 0 | 1 | 2 | 3 | 4 | 5 | 6 | 7 | 8 | 9 | 10 |
-|--------------------------------------------|
-| X |   |   |   | X |   |   |   | X |   |    |
-|--------------------------------------------|
-|   |run()|   |   | X |   |   |   | X |   |    |
-
+|  0  |  1  |  2  |  3  |  4  |  5  |  6  |  7  |  8  |  9  |  10 | 11  | 12 |
+|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|-----|----|
+|  X  |     |     |     |  X  |     |     |     |  X  |     |     |     | X  |
+|     |R    |     |     |     |     |     |     |     |R|     |
 
 An overframe condition is defined as a situation where the last time the task ran is greater or equal to the twice the scheduled run time.  Or in other words, the task should have run at least twice since the last time it ran.
 
 In the above diagram, a task is scheduled to run at times 0, 4, 8, and so on.  If ```run()``` is
-called at time 1, the task will run (technical one unit of time late).  If time then advances
+called at time 1, the task will run (technicaly one unit of time late).  If time then advances
 to time 9, the task should have run at both time 4 and time 8.
 
-The behavior to define in this condition is, should the scheduler:
-1. Run the 
+The scheduler has three options:
+1. Run the task twice to "catch up" to current time.
+2. Drop any missed runs and only run the task once at.
 
-- If the overframe condition is detected, the scheduler will run the task immediately and schedule the next run of the task 
+# Our Spec
+
+- If the overframe condition is detected, the scheduler will drop any 
+missed runs.

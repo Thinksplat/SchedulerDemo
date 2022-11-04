@@ -29,35 +29,34 @@ namespace Scheduler
     {
     public:
         virtual void run(IClock::Time_t current_time) = 0;
-        virtual IClock::Time_t next_run_time(IClock::Time_t current_time) const = 0;
+        virtual IClock::Time_t next_run_time(IClock::Time_t current_time) = 0;
     };
 
     class MonotonicScheduler : public IScheduler, public IRunnableSchedule
     {
     public:
-        MonotonicScheduler(IClock &clock) : clock(clock) {}
-        void schedule(const Task &task, IClock::Time_t delta_time) override
+        MonotonicScheduler()  {}
+        void schedule(const Task &task, IClock::Time_t delta_time, IClock::Time_t phase=0) override
         {
-            tasks.push_back(ScheduledTask(task, clock.currentTime() - delta_time, delta_time));
+            IClock::Time_t previous_run_time = phase;
+            tasks.push_back(ScheduledTask(task, previous_run_time, delta_time));
         }
-        void run() override
+        void run(IClock::Time_t current_time) override
         {
-            auto current_time = clock.currentTime();
             for (auto &task : tasks)
             {
                 IClock::Time_t diff = current_time - task.last_run_time;
                 if (diff >= task.delta_time)
                 {
-                    // Update the last run time.  The loop handles
-                    // the overframe condition to prevent double-executions.
-                    // The policy here is to drop the missed frame and run on the next.
-                    do
-                    {
-                        task.last_run_time += task.delta_time;
-                    } while(current_time - task.last_run_time >= task.delta_time);
+                    // Some math to update the last_run_time to when it should
+                    // have run within this period.
+                    task.last_run_time = current_time - (diff % task.delta_time);
                     task.task();
                 }
             }
+        }
+        virtual IClock::Time_t next_run_time(IClock::Time_t current_time) override {
+            return 0;
         }
 
     private:
@@ -70,6 +69,5 @@ namespace Scheduler
         using TaskList = std::vector<ScheduledTask>;
 
         TaskList tasks;
-        IClock &clock;
     };
 }
