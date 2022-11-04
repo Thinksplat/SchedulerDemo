@@ -6,7 +6,7 @@ using namespace Scheduler;
 class MockScheduler : public IScheduler
 {
 public:
-    void schedule(const Task &task, IClock::time_t delta_time, IClock::time_t phase = 0) override
+    void schedule(const Task &, IClock::time_t, IClock::time_t) override
     {
     }
 };
@@ -14,7 +14,7 @@ public:
 class MockRunner : public IRunnableSchedule
 {
 public:
-    void run(IClock::time_t current_time) override
+    void run(IClock::time_t) override
     {
     }
 };
@@ -47,7 +47,7 @@ TEST(SchedulerTests, IRunnableScheduleUsage)
     runner.run(0);
 }
 
-static bool SynchronizeClockWithTask(IRunnableSchedule &scheduler, MockClock &clock, bool &ran, int delta_time)
+static bool SynchronizeClockWithTask(IRunnableSchedule &scheduler, MockClock &clock, bool &ran, IClock::time_t delta_time)
 {
     // Loop run the scheduler incrementing the clock by 1 each time.
     // We expect the task to run within delta_time ticks.
@@ -190,7 +190,7 @@ TEST(SchedulerTests, LateCallWillHonorOriginalFrequency)
                        { ran = true; },
                        100);
 
-   SynchronizeClockWithTask(scheduler, clock, ran, 100);
+    SynchronizeClockWithTask(scheduler, clock, ran, 100);
 
     // 10 units past the scheduled time
     clock.value += 110;
@@ -304,12 +304,12 @@ TEST(SchedulerTests, TestExpectations)
             ASSERT_TRUE(TestExpectations(delta_time, phase, delta_time * 2)) << "delta_time: " << delta_time << " phase: " << phase;
 
             auto max_clock = std::numeric_limits<IClock::time_t>::max();
-            ASSERT_TRUE(TestExpectations(delta_time, phase,  max_clock-2)) << "delta_time: " << delta_time << " phase: " << phase;
-            ASSERT_TRUE(TestExpectations(delta_time, phase,  max_clock-1)) << "delta_time: " << delta_time << " phase: " << phase;
-            ASSERT_TRUE(TestExpectations(delta_time, phase,  max_clock-0)) << "delta_time: " << delta_time << " phase: " << phase;
-            ASSERT_TRUE(TestExpectations(delta_time, phase,  0)) << "delta_time: " << delta_time << " phase: " << phase;
-            ASSERT_TRUE(TestExpectations(delta_time, phase,  1)) << "delta_time: " << delta_time << " phase: " << phase;
-            ASSERT_TRUE(TestExpectations(delta_time, phase,  2)) << "delta_time: " << delta_time << " phase: " << phase;
+            ASSERT_TRUE(TestExpectations(delta_time, phase, max_clock - 2)) << "delta_time: " << delta_time << " phase: " << phase;
+            ASSERT_TRUE(TestExpectations(delta_time, phase, max_clock - 1)) << "delta_time: " << delta_time << " phase: " << phase;
+            ASSERT_TRUE(TestExpectations(delta_time, phase, max_clock - 0)) << "delta_time: " << delta_time << " phase: " << phase;
+            ASSERT_TRUE(TestExpectations(delta_time, phase, 0)) << "delta_time: " << delta_time << " phase: " << phase;
+            ASSERT_TRUE(TestExpectations(delta_time, phase, 1)) << "delta_time: " << delta_time << " phase: " << phase;
+            ASSERT_TRUE(TestExpectations(delta_time, phase, 2)) << "delta_time: " << delta_time << " phase: " << phase;
         }
     }
 }

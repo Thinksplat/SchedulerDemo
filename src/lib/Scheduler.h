@@ -74,8 +74,8 @@ namespace Scheduler
         using ScheduledTask = struct ScheduledTask
         {
             ScheduledTask(const Task &task, IClock::time_t last_run_time, IClock::time_t delta_time) : task(task), last_run_time(last_run_time), delta_time(delta_time) {}
-            IClock::time_t last_run_time, delta_time;
             Task task;
+            IClock::time_t last_run_time, delta_time;
         };
         using TaskList = std::vector<ScheduledTask>;
 

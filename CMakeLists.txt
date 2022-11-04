@@ -13,7 +13,11 @@ endif()
 # GoogleTest requires at least C++14
 set(CMAKE_CXX_STANDARD 14)
 
-
+if(MSVC)
+  add_compile_options(PRIVATE /W4 /WX)
+else()
+  add_compile_options(-Wall -Wextra -Wpedantic -Werror)
+endif()
 
 add_subdirectory(src/lib)
 add_subdirectory(src/app)
